@@ -19,7 +19,7 @@ def dump_messages(messages: list[Message]) -> list[dict]:
     return [message.model_dump() for message in messages]
 
 
-def prepare_messages(messages: list[Message], llm: BaseChatModel, system_prompt: str) -> list[Message]:
+def prepare_messages(messages: list[Message], llm: BaseChatModel, system_prompt: str, sql_schema: str) -> list[Message]:
     """Prepare the messages for the LLM.
 
     Args:
@@ -39,4 +39,4 @@ def prepare_messages(messages: list[Message], llm: BaseChatModel, system_prompt:
         include_system=False,
         allow_partial=False,
     )
-    return [Message(role="system", content=system_prompt)] + trimmed_messages
+    return [Message(role="system", content=system_prompt.format(datasource_schema=sql_schema))] + trimmed_messages

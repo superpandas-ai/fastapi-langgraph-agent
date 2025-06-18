@@ -15,7 +15,7 @@ from langchain_core.messages import (
     convert_to_openai_messages,
 )
 from langchain_openai import ChatOpenAI
-from langfuse.callback import CallbackHandler
+from langfuse.langchain import CallbackHandler
 from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 from langgraph.graph import (
     END,
@@ -25,7 +25,7 @@ from langgraph.graph.state import CompiledStateGraph
 from langgraph.types import StateSnapshot
 from openai import OpenAIError
 from psycopg_pool import AsyncConnectionPool
-from app.core.metrics import llm_inference_duration_seconds 
+from app.core.metrics import llm_inference_duration_seconds
 from app.core.config import (
     Environment,
     settings,
@@ -37,6 +37,7 @@ from app.schemas import (
     GraphState,
     Message,
 )
+from app.schemas.chat import ChatResponse
 from app.utils import (
     dump_messages,
     prepare_messages,
@@ -64,7 +65,8 @@ class LangGraphAgent:
         self._connection_pool: Optional[AsyncConnectionPool] = None
         self._graph: Optional[CompiledStateGraph] = None
 
-        logger.info("llm_initialized", model=settings.LLM_MODEL, environment=settings.ENVIRONMENT.value)
+        logger.info("llm_initialized", model=settings.LLM_MODEL,
+                    environment=settings.ENVIRONMENT.value)
 
     def _get_model_kwargs(self) -> Dict[str, Any]:
         """Get environment-specific model kwargs.
@@ -108,12 +110,15 @@ class LangGraphAgent:
                     },
                 )
                 await self._connection_pool.open()
-                logger.info("connection_pool_created", max_size=max_size, environment=settings.ENVIRONMENT.value)
+                logger.info("connection_pool_created", max_size=max_size,
+                            environment=settings.ENVIRONMENT.value)
             except Exception as e:
-                logger.error("connection_pool_creation_failed", error=str(e), environment=settings.ENVIRONMENT.value)
+                logger.error("connection_pool_creation_failed", error=str(
+                    e), environment=settings.ENVIRONMENT.value)
                 # In production, we might want to degrade gracefully
                 if settings.ENVIRONMENT == Environment.PRODUCTION:
-                    logger.warning("continuing_without_connection_pool", environment=settings.ENVIRONMENT.value)
+                    logger.warning("continuing_without_connection_pool",
+                                   environment=settings.ENVIRONMENT.value)
                     return None
                 raise e
         return self._connection_pool
@@ -167,7 +172,8 @@ class LangGraphAgent:
 
                 continue
 
-        raise Exception(f"Failed to get a response from the LLM after {max_retries} attempts")
+        raise Exception(
+            f"Failed to get a response from the LLM after {max_retries} attempts")
 
     # Define our tool node
     async def _tool_call(self, state: GraphState) -> GraphState:
@@ -238,7 +244,8 @@ class LangGraphAgent:
                     # In production, proceed without checkpointer if needed
                     checkpointer = None
                     if settings.ENVIRONMENT != Environment.PRODUCTION:
-                        raise Exception("Connection pool initialization failed")
+                        raise Exception(
+                            "Connection pool initialization failed")
 
                 self._graph = graph_builder.compile(
                     checkpointer=checkpointer, name=f"{settings.PROJECT_NAME} Agent ({settings.ENVIRONMENT.value})"
@@ -251,7 +258,8 @@ class LangGraphAgent:
                     has_checkpointer=checkpointer is not None,
                 )
             except Exception as e:
-                logger.error("graph_creation_failed", error=str(e), environment=settings.ENVIRONMENT.value)
+                logger.error("graph_creation_failed", error=str(
+                    e), environment=settings.ENVIRONMENT.value)
                 # In production, we don't want to crash the app
                 if settings.ENVIRONMENT == Environment.PRODUCTION:
                     logger.warning("continuing_without_graph")
@@ -265,7 +273,7 @@ class LangGraphAgent:
         messages: list[Message],
         session_id: str,
         user_id: Optional[str] = None,
-    ) -> list[dict]:
+    ) -> ChatResponse:
         """Get a response from the LLM.
 
         Args:
@@ -291,7 +299,8 @@ class LangGraphAgent:
         }
         try:
             response = await self._graph.ainvoke(
-                {"messages": dump_messages(messages), "session_id": session_id}, config
+                {"messages": dump_messages(
+                    messages), "session_id": session_id}, config
             )
             return self.__process_messages(response["messages"])
         except Exception as e:
@@ -329,11 +338,13 @@ class LangGraphAgent:
                 try:
                     yield token.content
                 except Exception as token_error:
-                    logger.error("Error processing token", error=str(token_error), session_id=session_id)
+                    logger.error("Error processing token", error=str(
+                        token_error), session_id=session_id)
                     # Continue with next token even if current one fails
                     continue
         except Exception as stream_error:
-            logger.error("Error in stream processing", error=str(stream_error), session_id=session_id)
+            logger.error("Error in stream processing", error=str(
+                stream_error), session_id=session_id)
             raise stream_error
 
     async def get_chat_history(self, session_id: str) -> list[Message]:
@@ -380,7 +391,8 @@ class LangGraphAgent:
                 for table in settings.CHECKPOINT_TABLES:
                     try:
                         await conn.execute(f"DELETE FROM {table} WHERE thread_id = %s", (session_id,))
-                        logger.info(f"Cleared {table} for session {session_id}")
+                        logger.info(
+                            f"Cleared {table} for session {session_id}")
                     except Exception as e:
                         logger.error(f"Error clearing {table}", error=str(e))
                         raise
