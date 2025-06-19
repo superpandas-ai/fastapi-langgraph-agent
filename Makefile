@@ -39,6 +39,24 @@ eval-no-report:
 	@echo "Running evaluation without generating report"
 	@bash -c "source scripts/set_env.sh ${ENV:-development} && python -m evals.main --no-report"
 
+# Streamlit commands
+streamlit-install:
+	@echo "Installing Streamlit dependencies"
+	uv sync --group streamlit
+
+streamlit-run:
+	@echo "Starting Streamlit app"
+	uv run streamlit run streamlit/app.py --server.port 8501 --server.address 0.0.0.0
+
+streamlit-test:
+	@echo "Running Streamlit app tests"
+	uv run python streamlit/test_app.py
+
+streamlit:
+	@echo "Installing and running Streamlit app"
+	@make streamlit-install
+	@make streamlit-run
+
 lint:
 	ruff check .
 
@@ -139,6 +157,10 @@ help:
 	@echo "  eval: Run evaluation with interactive mode"
 	@echo "  eval-quick: Run evaluation with default settings"
 	@echo "  eval-no-report: Run evaluation without generating report"
+	@echo "  streamlit-install: Install Streamlit dependencies"
+	@echo "  streamlit-run: Start Streamlit app"
+	@echo "  streamlit-test: Run Streamlit app tests"
+	@echo "  streamlit: Install and run Streamlit app"
 	@echo "  test: Run tests"
 	@echo "  clean: Clean up"
 	@echo "  docker-build: Build default Docker image"

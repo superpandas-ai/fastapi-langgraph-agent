@@ -33,6 +33,11 @@ dependencies = [
     "langchain-community>=0.3.20",
     "tqdm>=4.67.1",
     "colorama>=0.4.6",
+    "smolagents>=1.18.0",
+    "streamlit>=1.40.1",
+    "requests>=2.31.0",
+    "pandas>=2.0.0",
+    "plotly>=5.15.0",
 ]
 
 [project.optional-dependencies]
@@ -50,6 +55,12 @@ test = [
     "pytest>=8.3.5",
 ]
 
+streamlit = [
+    "streamlit>=1.40.1",
+    "requests>=2.31.0",
+    "pandas>=2.0.0",
+    "plotly>=5.15.0",
+]
 
 [tool.pytest.ini_options]
 markers = ["slow: marks tests as slow (deselect with '-m \"not slow\"')"]

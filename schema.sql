@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS session (
     id TEXT PRIMARY KEY,
     user_id INTEGER NOT NULL,
     name TEXT NOT NULL DEFAULT '',
+    selected_agent TEXT,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE
 );

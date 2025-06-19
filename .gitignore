@@ -9,6 +9,8 @@ wheels/
 
 # Virtual environments
 .venv
+.streamlit
+.vscode
 
 # Environment variables
 .env

@@ -1,0 +1,803 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "SuperPandas",
+        "description": "A production-ready FastAPI template with LangGraph and Langfuse integration",
+        "version": "0.0.1"
+    },
+    "paths": {
+        "/api/v1/auth/register": {
+            "post": {
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Register User",
+                "description": "Register a new user.\n\nArgs:\n    request: The FastAPI request object for rate limiting.\n    user_data: User registration data\n\nReturns:\n    UserResponse: The created user info",
+                "operationId": "register_user_api_v1_auth_register_post",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UserCreate"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/login": {
+            "post": {
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Login",
+                "description": "Login a user.\n\nArgs:\n    request: The FastAPI request object for rate limiting.\n    username: User's email\n    password: User's password\n    grant_type: Must be \"password\"\n\nReturns:\n    TokenResponse: Access token information\n\nRaises:\n    HTTPException: If credentials are invalid",
+                "operationId": "login_api_v1_auth_login_post",
+                "requestBody": {
+                    "content": {
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Body_login_api_v1_auth_login_post"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TokenResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/session": {
+            "post": {
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Create Session",
+                "description": "Create a new chat session for the authenticated user.\n\nArgs:\n    user: The authenticated user\n\nReturns:\n    SessionResponse: The session ID, name, and access token",
+                "operationId": "create_session_api_v1_auth_session_post",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SessionResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "HTTPBearer": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/auth/session/{session_id}/name": {
+            "patch": {
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Update Session Name",
+                "description": "Update a session's name.\n\nArgs:\n    session_id: The ID of the session to update\n    name: The new name for the session\n    current_session: The current session from auth\n\nReturns:\n    SessionResponse: The updated session information",
+                "operationId": "update_session_name_api_v1_auth_session__session_id__name_patch",
+                "security": [
+                    {
+                        "HTTPBearer": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "session_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "title": "Session Id"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Body_update_session_name_api_v1_auth_session__session_id__name_patch"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SessionResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/sessions": {
+            "get": {
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Get User Sessions",
+                "description": "Get all session IDs for the authenticated user.\n\nArgs:\n    user: The authenticated user\n\nReturns:\n    List[SessionResponse]: List of session IDs",
+                "operationId": "get_user_sessions_api_v1_auth_sessions_get",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/SessionResponse"
+                                    },
+                                    "type": "array",
+                                    "title": "Response Get User Sessions Api V1 Auth Sessions Get"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "HTTPBearer": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/chatbot/select-agent": {
+            "post": {
+                "tags": [
+                    "chatbot"
+                ],
+                "summary": "Select Agent",
+                "description": "Select an agent for the current session.\n\nArgs:\n    request: The FastAPI request object for rate limiting.\n    agent_selection: The agent selection request.\n    session: The current session from the auth token.\n\nReturns:\n    dict: A message indicating the agent was selected.\n\nRaises:\n    HTTPException: If the agent selection is invalid.",
+                "operationId": "select_agent_api_v1_chatbot_select_agent_post",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AgentSelection"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "HTTPBearer": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/chatbot/chat": {
+            "post": {
+                "tags": [
+                    "chatbot"
+                ],
+                "summary": "Chat",
+                "description": "Process a chat request using LangGraph.\n\nArgs:\n    request: The FastAPI request object for rate limiting.\n    chat_request: The chat request containing messages.\n    session: The current session from the auth token.\n\nReturns:\n    ChatResponse: The processed chat response.\n\nRaises:\n    HTTPException: If there's an error processing the request.",
+                "operationId": "chat_api_v1_chatbot_chat_post",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ChatRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ChatResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "HTTPBearer": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/chatbot/chat/stream": {
+            "post": {
+                "tags": [
+                    "chatbot"
+                ],
+                "summary": "Chat Stream",
+                "description": "Process a chat request using LangGraph with streaming response.\n\nArgs:\n    request: The FastAPI request object for rate limiting.\n    chat_request: The chat request containing messages.\n    session: The current session from the auth token.\n\nReturns:\n    StreamingResponse: A streaming response of the chat completion.\n\nRaises:\n    HTTPException: If there's an error processing the request.",
+                "operationId": "chat_stream_api_v1_chatbot_chat_stream_post",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ChatRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "HTTPBearer": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/chatbot/messages": {
+            "get": {
+                "tags": [
+                    "chatbot"
+                ],
+                "summary": "Get Session Messages",
+                "description": "Get all messages for a session.\n\nArgs:\n    request: The FastAPI request object for rate limiting.\n    session: The current session from the auth token.\n\nReturns:\n    ChatResponse: All messages in the session.\n\nRaises:\n    HTTPException: If there's an error retrieving the messages.",
+                "operationId": "get_session_messages_api_v1_chatbot_messages_get",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ChatResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "HTTPBearer": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "chatbot"
+                ],
+                "summary": "Clear Chat History",
+                "description": "Clear all messages for a session.\n\nArgs:\n    request: The FastAPI request object for rate limiting.\n    session: The current session from the auth token.\n\nReturns:\n    dict: A message indicating the chat history was cleared.",
+                "operationId": "clear_chat_history_api_v1_chatbot_messages_delete",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "HTTPBearer": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/health": {
+            "get": {
+                "summary": "Health Check",
+                "description": "Health check endpoint.\n\nReturns:\n    dict: Health status information.",
+                "operationId": "health_check_api_v1_health_get",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/": {
+            "get": {
+                "summary": "Root",
+                "description": "Root endpoint returning basic API information.",
+                "operationId": "root__get",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/health": {
+            "get": {
+                "summary": "Health Check",
+                "description": "Health check endpoint with environment-specific information.\n\nReturns:\n    Dict[str, Any]: Health status information",
+                "operationId": "health_check_health_get",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "additionalProperties": true,
+                                    "type": "object",
+                                    "title": "Response Health Check Health Get"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "AgentSelection": {
+                "properties": {
+                    "platform": {
+                        "type": "string",
+                        "enum": [
+                            "fic",
+                            "sevdesk",
+                            "hr"
+                        ],
+                        "title": "Platform",
+                        "description": "The platform to select for the session"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "platform"
+                ],
+                "title": "AgentSelection",
+                "description": "Request model for agent selection endpoint.\n\nAttributes:\n    platform: The platform to select for the session."
+            },
+            "Body_login_api_v1_auth_login_post": {
+                "properties": {
+                    "username": {
+                        "type": "string",
+                        "title": "Username"
+                    },
+                    "password": {
+                        "type": "string",
+                        "title": "Password"
+                    },
+                    "grant_type": {
+                        "type": "string",
+                        "title": "Grant Type",
+                        "default": "password"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "username",
+                    "password"
+                ],
+                "title": "Body_login_api_v1_auth_login_post"
+            },
+            "Body_update_session_name_api_v1_auth_session__session_id__name_patch": {
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "title": "Name"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "name"
+                ],
+                "title": "Body_update_session_name_api_v1_auth_session__session_id__name_patch"
+            },
+            "ChatRequest": {
+                "properties": {
+                    "messages": {
+                        "items": {
+                            "$ref": "#/components/schemas/Message"
+                        },
+                        "type": "array",
+                        "minItems": 1,
+                        "title": "Messages",
+                        "description": "List of messages in the conversation"
+                    },
+                    "platform": {
+                        "anyOf": [
+                            {
+                                "type": "string",
+                                "enum": [
+                                    "fic",
+                                    "sevdesk",
+                                    "hr"
+                                ]
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Platform",
+                        "description": "The platform to use for the chat"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "messages"
+                ],
+                "title": "ChatRequest",
+                "description": "Request model for chat endpoint.\n\nAttributes:\n    messages: List of messages in the conversation."
+            },
+            "ChatResponse": {
+                "properties": {
+                    "messages": {
+                        "items": {
+                            "$ref": "#/components/schemas/Message"
+                        },
+                        "type": "array",
+                        "title": "Messages",
+                        "description": "List of messages in the conversation"
+                    },
+                    "generated_code": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Generated Code",
+                        "description": "The generated code to answer the user's question."
+                    },
+                    "fig": {
+                        "anyOf": [
+                            {},
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Fig",
+                        "description": "The figure for plotting the data."
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "messages"
+                ],
+                "title": "ChatResponse",
+                "description": "Response model for chat endpoint.\n\nAttributes:\n    messages: List of messages in the conversation.\n    generated_code: The generated code to answer the user's question.\n    fig: The figure for plotting the data."
+            },
+            "HTTPValidationError": {
+                "properties": {
+                    "detail": {
+                        "items": {
+                            "$ref": "#/components/schemas/ValidationError"
+                        },
+                        "type": "array",
+                        "title": "Detail"
+                    }
+                },
+                "type": "object",
+                "title": "HTTPValidationError"
+            },
+            "Message": {
+                "properties": {
+                    "role": {
+                        "type": "string",
+                        "enum": [
+                            "user",
+                            "assistant",
+                            "system"
+                        ],
+                        "title": "Role",
+                        "description": "The role of the message sender"
+                    },
+                    "content": {
+                        "type": "string",
+                        "maxLength": 12000,
+                        "minLength": 1,
+                        "title": "Content",
+                        "description": "The content of the message"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "role",
+                    "content"
+                ],
+                "title": "Message",
+                "description": "Message model for chat endpoint.\n\nAttributes:\n    role: The role of the message sender (user or assistant).\n    content: The content of the message."
+            },
+            "SessionResponse": {
+                "properties": {
+                    "session_id": {
+                        "type": "string",
+                        "title": "Session Id",
+                        "description": "The unique identifier for the chat session"
+                    },
+                    "name": {
+                        "type": "string",
+                        "maxLength": 100,
+                        "title": "Name",
+                        "description": "Name of the session",
+                        "default": ""
+                    },
+                    "token": {
+                        "$ref": "#/components/schemas/Token",
+                        "description": "The authentication token for the session"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "session_id",
+                    "token"
+                ],
+                "title": "SessionResponse",
+                "description": "Response model for session creation.\n\nAttributes:\n    session_id: The unique identifier for the chat session\n    name: Name of the session (defaults to empty string)\n    token: The authentication token for the session"
+            },
+            "Token": {
+                "properties": {
+                    "access_token": {
+                        "type": "string",
+                        "title": "Access Token",
+                        "description": "The JWT access token"
+                    },
+                    "token_type": {
+                        "type": "string",
+                        "title": "Token Type",
+                        "description": "The type of token",
+                        "default": "bearer"
+                    },
+                    "expires_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "title": "Expires At",
+                        "description": "The token expiration timestamp"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "access_token",
+                    "expires_at"
+                ],
+                "title": "Token",
+                "description": "Token model for authentication.\n\nAttributes:\n    access_token: The JWT access token.\n    token_type: The type of token (always \"bearer\").\n    expires_at: The token expiration timestamp."
+            },
+            "TokenResponse": {
+                "properties": {
+                    "access_token": {
+                        "type": "string",
+                        "title": "Access Token",
+                        "description": "The JWT access token"
+                    },
+                    "token_type": {
+                        "type": "string",
+                        "title": "Token Type",
+                        "description": "The type of token",
+                        "default": "bearer"
+                    },
+                    "expires_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "title": "Expires At",
+                        "description": "When the token expires"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "access_token",
+                    "expires_at"
+                ],
+                "title": "TokenResponse",
+                "description": "Response model for login endpoint.\n\nAttributes:\n    access_token: The JWT access token\n    token_type: The type of token (always \"bearer\")\n    expires_at: When the token expires"
+            },
+            "UserCreate": {
+                "properties": {
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "title": "Email",
+                        "description": "User's email address"
+                    },
+                    "password": {
+                        "type": "string",
+                        "maxLength": 64,
+                        "minLength": 8,
+                        "format": "password",
+                        "title": "Password",
+                        "description": "User's password",
+                        "writeOnly": true
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "email",
+                    "password"
+                ],
+                "title": "UserCreate",
+                "description": "Request model for user registration.\n\nAttributes:\n    email: User's email address\n    password: User's password"
+            },
+            "UserResponse": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "title": "Id",
+                        "description": "User's ID"
+                    },
+                    "email": {
+                        "type": "string",
+                        "title": "Email",
+                        "description": "User's email address"
+                    },
+                    "token": {
+                        "$ref": "#/components/schemas/Token",
+                        "description": "Authentication token"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "id",
+                    "email",
+                    "token"
+                ],
+                "title": "UserResponse",
+                "description": "Response model for user operations.\n\nAttributes:\n    id: User's ID\n    email: User's email address\n    token: Authentication token"
+            },
+            "ValidationError": {
+                "properties": {
+                    "loc": {
+                        "items": {
+                            "anyOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "integer"
+                                }
+                            ]
+                        },
+                        "type": "array",
+                        "title": "Location"
+                    },
+                    "msg": {
+                        "type": "string",
+                        "title": "Message"
+                    },
+                    "type": {
+                        "type": "string",
+                        "title": "Error Type"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "loc",
+                    "msg",
+                    "type"
+                ],
+                "title": "ValidationError"
+            }
+        },
+        "securitySchemes": {
+            "HTTPBearer": {
+                "type": "http",
+                "scheme": "bearer"
+            }
+        }
+    }
+}
